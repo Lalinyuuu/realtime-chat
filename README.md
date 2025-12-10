@@ -144,23 +144,23 @@ Open your browser and navigate to: [http://localhost:3000](http://localhost:3000
 
 ## 📸 Screenshots
 
-### Main Chat Interface
-![Main Chat Interface](./screenshots/01-screenshot.png)
+### Multiple Sessions - Sidebar Status Display
+![Multiple Sessions with Sidebar](./screenshots/01-screenshot.png)
 
-### Sidebar Menu
-![Sidebar Menu](./screenshots/02-screenshot.png)
+### Sidebar with Active Chat Session
+![Sidebar Status During AI Conversation](./screenshots/02-screenshot.png)
 
 ### New Chat Conversation
 ![New Chat](./screenshots/03-screenshot.png)
 
-### AI Response and interaction
-![AI Response](./screenshots/04-screenshot.png)
+### Chat Interface - Sidebar Hidden
+![New Chat Interface with Collapsed Sidebar](./screenshots/04-screenshot.png)
 
 ### Conversation History
 ![Conversation History](./screenshots/05-screenshot.png)
 
-### Multiple Sessions
-![Multiple Sessions](./screenshots/06-screenshot.png)
+### Clear Chat Confirmation Modal
+![Clear Chat Modal Dialog](./screenshots/06-screenshot.png)
 
 ### Error Validation - Message Length Limit
 ![Error Message - 500 Character Limit](./screenshots/07-screenshot.png)
