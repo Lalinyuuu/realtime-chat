@@ -162,8 +162,8 @@ Open your browser and navigate to: [http://localhost:3000](http://localhost:3000
 ### Multiple Sessions
 ![Multiple Sessions](./screenshots/06-screenshot.png)
 
-### Clear Chat Functionality
-![Clear Chat](./screenshots/07-screenshot.png)
+### Error Validation - Message Length Limit
+![Error Message - 500 Character Limit](./screenshots/07-screenshot.png)
 
 ## 📁 Project Structure
 
