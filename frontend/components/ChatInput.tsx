@@ -15,7 +15,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [input, setInput] = useState('');
 
   const handleSend = () => {
-    if (input.trim() && !disabled && input.length <= MAX_LENGTH) {
+    if (input.trim() && input.length <= MAX_LENGTH) {
       onSend(input.trim());
       setInput('');
     }
@@ -40,21 +40,20 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Message..."
-            disabled={disabled}
             rows={1}
             maxLength={MAX_LENGTH + 10}
-            className={`w-full px-4 py-3 rounded-lg text-sm resize-none outline-none transition-all duration-200 border min-h-[44px] max-h-[200px] ${
+            className={`w-full px-4 py-3 rounded-lg text-sm resize-none outline-none transition-all duration-200 border min-h-[44px] max-h-[200px] cursor-text ${
               isOverLimit
-                ? `border-red-4 text-red-4 ${disabled ? 'bg-gray-3' : 'bg-red-4/10'}`
-                : `border-gray-5 text-white-1 ${disabled ? 'bg-gray-3' : 'bg-gray-2'} focus:border-gray-6 focus:bg-gray-3`
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-text'}`}
+                ? 'border-red-4 text-red-4 bg-red-4/10'
+                : 'border-gray-5 text-white-1 bg-gray-2 focus:border-gray-6 focus:bg-gray-3'
+            }`}
           />
         </div>
         <button
           onClick={handleSend}
-          disabled={disabled || !input.trim() || isOverLimit}
+          disabled={!input.trim() || isOverLimit}
           className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors min-w-[60px] h-[44px] flex items-center justify-center border ${
-            disabled || !input.trim() || isOverLimit
+            !input.trim() || isOverLimit
               ? 'bg-gray-3 text-gray-7 border-gray-4 cursor-not-allowed'
               : 'bg-gray-2 text-gray-10 border-gray-4 hover:bg-gray-3 cursor-pointer'
           }`}

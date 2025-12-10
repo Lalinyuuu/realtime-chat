@@ -2,10 +2,12 @@
 
 import { MessageSquare, Plus, Sparkles } from 'lucide-react';
 import { Session } from '@/types/chat';
+import { useMemo, useState, useEffect } from 'react';
 
 interface LeftSidebarProps {
   sessions?: Session[];
   currentSessionId?: string | null;
+  loadingSessions?: string[];
   onNewChat?: () => void;
   onSelectConversation?: (sessionId: string) => void;
   activeItem?: 'chat' | 'settings' | 'about';
@@ -14,6 +16,7 @@ interface LeftSidebarProps {
 export default function LeftSidebar({ 
   sessions = [],
   currentSessionId,
+  loadingSessions = [],
   onNewChat, 
   onSelectConversation,
   activeItem = 'chat' 
@@ -23,6 +26,14 @@ export default function LeftSidebar({
       onSelectConversation(sessionId);
     }
   };
+
+  // Use useState + useEffect to ensure re-render when loadingSessions changes
+  const [loadingSessionsSet, setLoadingSessionsSet] = useState<Set<string>>(new Set());
+  
+  useEffect(() => {
+    // Create new Set to trigger re-render
+    setLoadingSessionsSet(new Set(loadingSessions));
+  }, [loadingSessions.length, loadingSessions.join(',')]); // Use both length and content to detect changes
 
   return (
     <div className="w-full h-screen flex flex-col bg-black-2">
@@ -55,9 +66,11 @@ export default function LeftSidebar({
             </div>
             {sessions.map((session) => {
               const isSelected = currentSessionId === session.id;
+              const isLoading = loadingSessionsSet.has(session.id);
+              // Use isLoading and sessions length in key to force re-render when state changes
               return (
                 <button
-                  key={session.id}
+                  key={`${session.id}-${isLoading ? 'loading' : 'idle'}-${sessions.length}-${loadingSessions.length}`}
                   onClick={() => handleSessionClick(session.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors relative cursor-pointer ${
                     isSelected 
@@ -68,11 +81,16 @@ export default function LeftSidebar({
                   <div className="flex items-start gap-2">
                     <MessageSquare className={`w-4 h-4 mt-0.5 shrink-0 ${isSelected ? 'text-orange-2' : 'text-gray-8'}`} />
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium truncate ${isSelected ? 'text-gray-10' : 'text-gray-9'}`}>
-                        {session.title}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className={`text-sm font-medium truncate ${isSelected ? 'text-gray-10' : 'text-gray-9'}`}>
+                          {session.title}
+                        </p>
+                        {isLoading && (
+                          <div className="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin border-orange-2 shrink-0" />
+                        )}
+                      </div>
                       <p className="text-xs mt-1 line-clamp-2 text-gray-8">
-                        {session.lastMessage || 'No messages yet'}
+                        {isLoading ? 'AI is thinking...' : (session.lastMessage || 'No messages yet')}
                       </p>
                     </div>
                   </div>

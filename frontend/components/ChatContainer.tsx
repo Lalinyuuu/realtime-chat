@@ -5,9 +5,10 @@ interface ChatContainerProps {
   messages: Message[];
   onSendMessage?: (message: string) => void;
   isLoading?: boolean;
+  messagesEndRef?: React.RefObject<HTMLDivElement>;
 }
 
-export default function ChatContainer({ messages, onSendMessage, isLoading = false }: ChatContainerProps) {
+export default function ChatContainer({ messages, onSendMessage, isLoading = false, messagesEndRef }: ChatContainerProps) {
   const suggestedQuestions = [
     "What can you help me with?",
     "Tell me a fun fact",
@@ -40,7 +41,7 @@ export default function ChatContainer({ messages, onSendMessage, isLoading = fal
                   className={`px-4 py-3 rounded-lg text-left transition-colors disabled:cursor-not-allowed text-sm border ${
                     isLoading 
                       ? 'bg-gray-3 text-gray-9 border-gray-4 opacity-60' 
-                      : 'bg-gray-2 text-white-1 border-gray-4 hover:bg-gray-3'
+                      : 'bg-gray-2 text-white-1 border-gray-4 hover:bg-gray-3 cursor-pointer'
                   }`}
                 >
                   {question}
@@ -50,11 +51,13 @@ export default function ChatContainer({ messages, onSendMessage, isLoading = fal
           </div>
         </div>
       ) : (
-        messages.map((message, index) => (
-          <ChatMessage key={message.id || index} message={message} />
-        ))
+        <>
+          {messages.map((message, index) => (
+            <ChatMessage key={message.id || index} message={message} />
+          ))}
+          {messagesEndRef && <div ref={messagesEndRef} className="h-4" />}
+        </>
       )}
     </div>
   );
 }
-

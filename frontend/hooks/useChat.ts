@@ -7,13 +7,23 @@ export function useChat() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingSessions, setLoadingSessions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showClearModal, setShowClearModal] = useState(false);
   const isLoadingRef = useRef(false);
+  const activeRequestsRef = useRef<Map<string, AbortController>>(new Map());
 
   useEffect(() => {
     isLoadingRef.current = isLoading;
   }, [isLoading]);
+
+  useEffect(() => {
+    if (currentSessionId) {
+      setIsLoading(loadingSessions.includes(currentSessionId));
+    } else {
+      setIsLoading(false);
+    }
+  }, [currentSessionId, loadingSessions]);
 
   const loadMessages = useCallback(async (sessionId?: string | null) => {
     try {
@@ -38,13 +48,34 @@ export function useChat() {
   const handleSendMessage = useCallback(async (content: string) => {
     if (!content.trim() || isLoadingRef.current) return;
 
+    let sessionId = currentSessionId || createSession();
+    const isNewSession = !currentSessionId;
+    
+    if (isNewSession) {
+      setCurrentSessionId(sessionId);
+      const newSession: Session = {
+        id: sessionId,
+        title: content.trim().substring(0, 50),
+        messageCount: 0,
+        lastMessage: '',
+        createdAt: new Date(),
+      };
+      setSessions((prev) => {
+        if (prev.some(s => s.id === sessionId)) {
+          return [...prev];
+        }
+        return [newSession, ...prev];
+      });
+    }
+
+    setLoadingSessions((prev) => {
+      if (prev.includes(sessionId)) {
+        return [...prev];
+      }
+      return [...prev, sessionId];
+    });
     setIsLoading(true);
     setError(null);
-
-    let sessionId = currentSessionId || createSession();
-    if (!currentSessionId) {
-      setCurrentSessionId(sessionId);
-    }
 
     const tempUserMessage: Message = {
       id: `temp-${Date.now()}`,
@@ -54,41 +85,90 @@ export function useChat() {
       sessionId,
     };
     
-    setMessages((prev) => [...prev, tempUserMessage]);
+    if (sessionId === currentSessionId || !currentSessionId) {
+      setMessages((prev) => [...prev, tempUserMessage]);
+    }
 
+    const originalSessionId = sessionId;
     try {
       const response = await sendMessage(content, sessionId);
       
       if (response.sessionId && response.sessionId !== sessionId) {
-        setCurrentSessionId(response.sessionId);
-        sessionId = response.sessionId;
+        const newSessionId = response.sessionId;
+        setLoadingSessions((prev) => {
+          const filtered = prev.filter(id => id !== originalSessionId);
+          return filtered.includes(newSessionId) ? filtered : [...filtered, newSessionId];
+        });
+        setCurrentSessionId(newSessionId);
+        sessionId = newSessionId;
       }
       
-      setMessages((prev) => {
-        const withoutTemp = prev.filter(msg => msg.id !== tempUserMessage.id);
-        return [...withoutTemp, response.userMessage, response.aiMessage];
-      });
+      const finalSessionId = response.sessionId || sessionId;
+      if (finalSessionId === currentSessionId) {
+        setMessages((prev) => {
+          const withoutTemp = prev.filter(msg => msg.id !== tempUserMessage.id);
+          return [...withoutTemp, response.userMessage, response.aiMessage];
+        });
+      } else {
+        await loadMessages(finalSessionId);
+        if (currentSessionId && currentSessionId !== finalSessionId) {
+          await loadMessages(currentSessionId);
+        }
+      }
       
       await loadSessions();
     } catch (err) {
-      setMessages((prev) => prev.filter(msg => msg.id !== tempUserMessage.id));
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      if (sessionId === currentSessionId || !currentSessionId) {
+        setMessages((prev) => prev.filter(msg => msg.id !== tempUserMessage.id));
+      }
+      if (sessionId === currentSessionId || !currentSessionId) {
+        setError(err instanceof Error ? err.message : 'Failed to send message');
+      }
+      if (isNewSession) {
+        setSessions((prev) => prev.filter(s => s.id !== sessionId));
+      }
     } finally {
-      setIsLoading(false);
+      setLoadingSessions((prev) => prev.filter(id => id !== originalSessionId && id !== sessionId));
     }
-  }, [currentSessionId, loadSessions]);
+  }, [currentSessionId, loadSessions, loadMessages]);
 
   const handleClearChat = useCallback(async () => {
     try {
+      setIsLoading(false);
+      
+      const oldSessionId = currentSessionId;
+      
+      if (oldSessionId) {
+        try {
+          await clearMessages(oldSessionId);
+        } catch (err) {
+          console.error('Failed to clear messages:', err);
+        }
+        
+        setLoadingSessions((prev) => prev.filter(id => id !== oldSessionId));
+        setSessions((prev) => prev.filter(session => session.id !== oldSessionId));
+      }
+      
       setMessages([]);
       setError(null);
       const newSessionId = createSession();
       setCurrentSessionId(newSessionId);
+      
+      const newSession: Session = {
+        id: newSessionId,
+        title: 'New Chat',
+        messageCount: 0,
+        lastMessage: '',
+        createdAt: new Date(),
+      };
+      setSessions((prev) => [newSession, ...prev]);
+      
       await loadSessions();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create new chat');
+      setIsLoading(false);
     }
-  }, [loadSessions]);
+  }, [loadSessions, currentSessionId]);
 
   const handleSelectConversation = useCallback(async (sessionId: string) => {
     try {
@@ -101,9 +181,11 @@ export function useChat() {
 
   const handleNewChat = useCallback(() => {
     if (!isLoading) {
-      handleClearChat();
+      setMessages([]);
+      setCurrentSessionId(null);
+      setError(null);
     }
-  }, [isLoading, handleClearChat]);
+  }, [isLoading]);
 
   const handleClearClick = useCallback(() => {
     if (messages.length > 0 && !isLoading) {
@@ -121,6 +203,7 @@ export function useChat() {
     sessions,
     currentSessionId,
     isLoading,
+    loadingSessions,
     error,
     showClearModal,
     loadMessages,

@@ -19,6 +19,7 @@ export default function Home() {
     sessions,
     currentSessionId,
     isLoading,
+    loadingSessions,
     error,
     showClearModal,
     loadMessages,
@@ -65,6 +66,7 @@ export default function Home() {
           <LeftSidebar 
             sessions={sessions}
             currentSessionId={currentSessionId}
+            loadingSessions={loadingSessions}
             onNewChat={handleNewChat}
             onSelectConversation={handleSelectConversation}
             activeItem="chat" 
@@ -73,29 +75,33 @@ export default function Home() {
 
         <div className="flex-1 flex flex-col bg-black-2">
           <header className="px-4 md:px-6 py-3.5 border-b border-gray-3 bg-black-2/95 backdrop-blur-sm flex items-center justify-between sticky top-0 z-10">
-            <button
-              onClick={() => setShowLeftSidebar(!showLeftSidebar)}
-              className={`p-2.5 rounded-lg transition-all duration-200 ${
-                showLeftSidebar 
-                  ? 'text-orange-2 bg-orange-2/10 hover:bg-orange-2/15' 
-                  : 'text-gray-9 hover:bg-gray-3 hover:text-gray-10'
-              } cursor-pointer active:scale-95`}
-              aria-label={showLeftSidebar ? 'Hide sidebar' : 'Show sidebar'}
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            
-            <div className="flex items-center gap-3 flex-1 justify-center px-4">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-orange-2 shadow-lg shadow-orange-2/20">
-                <Sparkles className="w-4 h-4 text-white-1" />
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="text-sm font-semibold text-gray-10 leading-tight">
-                  Mini Chat App
-                </span>
-                <span className="text-[10px] text-gray-8 leading-tight tracking-wide uppercase">
-                  Powered by Ollama
-                </span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowLeftSidebar(!showLeftSidebar)}
+                className={`p-2.5 rounded-lg transition-all duration-200 ${
+                  showLeftSidebar 
+                    ? 'text-orange-2 bg-orange-2/10 hover:bg-orange-2/15' 
+                    : 'text-gray-9 hover:bg-gray-3 hover:text-gray-10'
+                } cursor-pointer active:scale-95`}
+                aria-label={showLeftSidebar ? 'Hide sidebar' : 'Show sidebar'}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              
+              <div className="flex items-center gap-3">
+                {!showLeftSidebar && (
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-orange-2 shadow-lg shadow-orange-2/20">
+                    <Sparkles className="w-4 h-4 text-white-1" />
+                  </div>
+                )}
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-semibold text-gray-10 leading-tight">
+                    Mini Chat App
+                  </span>
+                  <span className="text-[10px] text-gray-8 leading-tight tracking-wide uppercase">
+                    Powered by Ollama
+                  </span>
+                </div>
               </div>
             </div>
             
@@ -117,7 +123,12 @@ export default function Home() {
           </header>
 
           <div className="flex-1 overflow-y-auto dark-scrollbar bg-black-2">
-            <ChatContainer messages={messages} onSendMessage={handleSendMessage} isLoading={isLoading} />
+            <ChatContainer 
+              messages={messages} 
+              onSendMessage={handleSendMessage} 
+              isLoading={isLoading}
+              messagesEndRef={messagesEndRef}
+            />
           </div>
 
           {error && (
@@ -138,12 +149,9 @@ export default function Home() {
 
           {isLoading && <LoadingIndicator />}
 
-          <ChatInput onSend={handleSendMessage} disabled={isLoading} />
-
-          <div ref={messagesEndRef} />
+          <ChatInput onSend={handleSendMessage} />
         </div>
       </div>
     </>
   );
 }
-
