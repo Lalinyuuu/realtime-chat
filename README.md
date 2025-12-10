@@ -144,17 +144,26 @@ Open your browser and navigate to: [http://localhost:3000](http://localhost:3000
 
 ## 📸 Screenshots
 
-> **Note**: Add screenshots of your working UI here. You can add images like:
-> - Main chat interface
-> - Conversation history sidebar
-> - Loading states
-> - Error messages
+### Main Chat Interface
+![Main Chat Interface](./screenshots/01-screenshot.png)
 
-Example format:
-```markdown
-![Chat Interface](./screenshots/chat-interface.png)
-![Sidebar](./screenshots/sidebar.png)
-```
+### Sidebar Menu
+![Sidebar Menu](./screenshots/02-screenshot.png)
+
+### New Chat Conversation
+![New Chat](./screenshots/03-screenshot.png)
+
+### AI Response and interaction
+![AI Response](./screenshots/04-screenshot.png)
+
+### Conversation History
+![Conversation History](./screenshots/05-screenshot.png)
+
+### Multiple Sessions
+![Multiple Sessions](./screenshots/06-screenshot.png)
+
+### Clear Chat Functionality
+![Clear Chat](./screenshots/07-screenshot.png)
 
 ## 📁 Project Structure
 
